@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset=utf-8>
+  <title>Visualization Demo</title>
+  <script src="js/three.js"></script>
+  <style>
+  body { margin: 0;}
+  /*canvas { width: 100%; height: 100% }*/
+  </style>
+</head>
+<body>
+
+  <script>
+  var scene = new THREE.Scene();
+  var camera = new THREE.PerspectiveCamera( 75, window.innerWidth/window.innerHeight, 0.1, 30000 );
+
+  var renderer = new THREE.WebGLRenderer();
+
+  var width = window.innerWidth;
+  var height = window.innerHeight;
+  var laneWidth = 50;
+
+  //Car Info
+  var nCar = 10;
+  var cars = [];
+  var carWaitingStages = [];
+  var carSpeed = 2;
+  var waitingCars = 0;
+  var carRange = 1200;
+  var nextCarLocation = -width/2;
+  var distanceToLight;
+
+  //Traffic Light Info
+  var lightState = 0;
+  var lightTime = 400;
+  var lights = [] ;
+
+  //Degree
+  var degree=Math.PI/180;
+
+  //Renders the app in half resolution, but display in full size.
+  // renderer.setSize( window.innerWidth/2, window.innerHeight/2, false );
+  renderer.setSize( width, height);
+  //Set Background Color to the Scene
+  renderer.setClearColor(0xeeeeff);
+  document.body.appendChild( renderer.domElement );
+
+
+  camera.position.z = 500;
+  camera.position.y = -500;
+  camera.rotation.x=45 * degree;
+
+
+
+  function createRoad(){
+
+    var material2 = new THREE.LineBasicMaterial({
+      color: 0x0000ff
+    });
+    var geometry2 = new THREE.Geometry();
+
+    //LINE 1
+    geometry2.vertices.push(
+      new THREE.Vector3( -width/2, -laneWidth, 0 ),
+      new THREE.Vector3(width/2, -laneWidth, 0 )
+    );
+
+    var line = new THREE.Line( geometry2, material2 );
+    scene.add( line );
+    //LINE2
+    var geometry3 = new THREE.Geometry();
+
+    geometry3.vertices.push(
+      new THREE.Vector3( -width/2, laneWidth, 0 ),
+      new THREE.Vector3(width/2, laneWidth, 0 )
+    );
+
+    var line = new THREE.Line( geometry3, material2 );
+    scene.add( line );
+
+    //LINE 3
+    var geometry4 = new THREE.Geometry();
+
+    geometry4.vertices.push(
+      new THREE.Vector3( -laneWidth, -height, 0 ),
+      new THREE.Vector3(-laneWidth, height, 0 )
+    );
+
+    var line = new THREE.Line( geometry4, material2 );
+    scene.add( line );
+
+    //LINE 4
+    var geometry5 = new THREE.Geometry();
+
+    geometry5.vertices.push(
+      new THREE.Vector3( laneWidth, -height, 0 ),
+      new THREE.Vector3(laneWidth, height, 0 )
+    );
+
+    var line = new THREE.Line( geometry5, material2 );
+    scene.add( line );
+
+    var texture = THREE.ImageUtils.loadTexture( 'images/texture.jpg' );
+
+    var cube = new THREE.Mesh(
+      new THREE.CubeGeometry(400,300,200),
+      new THREE.MeshBasicMaterial({ map: texture })
+    );
+
+    cube.position.x= -300;
+    cube.position.y= 350;
+    scene.add(cube);
+
+    cube = new THREE.Mesh(
+      new THREE.CubeGeometry(400,300,200),
+      new THREE.MeshBasicMaterial({ map: texture })
+    );
+
+    cube.position.x= 300;
+    cube.position.y= 350;
+    scene.add(cube);
+  }
+
+  function initCars(){
+    var geometry = new THREE.CubeGeometry( 45, 25, 20 );
+
+    // var texture = THREE.ImageUtils.loadTexture( 'images/texture.jpg' );
+    var material = new THREE.MeshNormalMaterial({ });
+
+    for (var i = 0; i < nCar; i++) {
+      var car = new THREE.Mesh( geometry, material );
+      //40 is to be sure that no cars are overlapped
+      nextCarLocation -= (carRange * Math.random()) + 40;
+      car.position.x = nextCarLocation;
+      car.position.y = -20;
+      scene.add( car );
+      cars.push(car);
+
+      var carWaitingStage = false;
+      carWaitingStages.push(carWaitingStage);
+
+    }
+
+
+
+  }
+
+  function initTrafficLights(){
+    var geometry = new THREE.PlaneGeometry( 5, 40, 0 );
+    var material = new THREE.MeshBasicMaterial({color: 0x00FF00});
+
+    var light = new THREE.Mesh( geometry, material );
+    light.position.y = -laneWidth/2-5;
+    light.position.x = -laneWidth;
+    scene.add(light);
+    lights.push(light);
+
+    var material2 = new THREE.MeshBasicMaterial({color: 0xcc0000});
+    var light2 = new THREE.Mesh( geometry, material2 );
+    light2.position.y = laneWidth/2+5;
+    light2.position.x = laneWidth;
+    scene.add(light2);
+    lights.push(light2);
+  }
+
+  function changeLightState(){
+    if(lightState == 0){
+      lights[0].material.color.setHex(0xcc0000);
+      lights[1].material.color.setHex(0x00FF00);
+      lightState = 1;
+    }
+    else{
+      lights[0].material.color.setHex(0x00FF00);
+      lights[1].material.color.setHex(0xcc0000);
+      lightState = 0;
+    }
+
+  }
+
+  createRoad();
+  initCars();
+  initTrafficLights();
+
+  var render = function () {
+    //pauses when the user navigates to another browser tab
+    requestAnimationFrame( render );
+
+    //Traffic Lights
+    lightTime--;
+    if(lightTime < 0){
+      lightTime = 500;
+      changeLightState();
+    }
+
+    distanceToLight = 40;
+    for (var i = 0; i < nCar; i++){
+      if(carWaitingStages[i]){
+        distanceToLight += 60;
+      }
+
+    }
+
+
+    for (var i = 0; i < nCar; i++){
+      if(cars[i].position.x < lights[0].position.x &&
+        cars[i].position.distanceTo(lights[0].position) < distanceToLight && lightState == 1){
+          carWaitingStages[i] = true;
+
+        }
+        else{
+          cars[i].position.x += carSpeed;
+          carWaitingStages[i] = false;
+        }
+
+        if(cars[i].position.x > width/2){
+
+          cars[i].position.x = -width/2 - (carRange * Math.random());
+        }
+
+      }
+
+
+
+
+
+
+      renderer.render(scene, camera);
+    };
+
+    render();
+
+    </script>
+  </body>
+  </html>
