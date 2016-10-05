@@ -31,6 +31,11 @@
   var nextCarLocation = -width/2;
   var distanceToLight;
 
+  //Second Set Of Cars
+  var cars2 = [];
+  var carWaitingStages2 = [];
+  var nextCarLocation2 = -height/2;
+
   //Traffic Light Info
   var lightState = 0;
   var lightTime = 400;
@@ -143,6 +148,23 @@
     }
 
 
+    geometry = new THREE.CubeGeometry( 25, 45, 20 );
+
+    for (var i = 0; i < nCar; i++) {
+      var car = new THREE.Mesh( geometry, material );
+      //40 is to be sure that no cars are overlapped
+      nextCarLocation2 -= (carRange * Math.random()) + 40;
+      car.position.x = 20;
+      car.position.y = nextCarLocation2;
+      scene.add( car );
+      cars2.push(car);
+
+      var carWaitingStage = false;
+      carWaitingStages2.push(carWaitingStage);
+
+    }
+
+
 
   }
 
@@ -218,6 +240,10 @@
           cars[i].position.x = -width/2 - (carRange * Math.random());
         }
 
+      }
+
+      for (var i = 0; i < nCar; i++){
+        cars2[i].position.y += carSpeed;
       }
 
 
