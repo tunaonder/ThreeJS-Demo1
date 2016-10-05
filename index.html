@@ -27,7 +27,7 @@
   var carWaitingStages = [];
   var carSpeed = 2;
   var waitingCars = 0;
-  var carRange = 1200;
+  var carRange = 500;
   var nextCarLocation = -width/2;
   var distanceToLight;
 
@@ -53,8 +53,16 @@
 
 
   camera.position.z = 500;
+
+  //Camera View 1
   camera.position.y = -500;
-  camera.rotation.x=45 * degree;
+  camera.rotation.x= 45 * degree;
+
+  //Camera View 2
+  // camera.position.x = 500;
+  // camera.rotation.y = 45 * degree;
+  // camera.rotation.z = 90 * degree;
+
 
 
 
@@ -67,8 +75,8 @@
 
     //LINE 1
     geometry2.vertices.push(
-      new THREE.Vector3( -width/2, -laneWidth, 0 ),
-      new THREE.Vector3(width/2, -laneWidth, 0 )
+      new THREE.Vector3( -30000, -laneWidth, 0 ),
+      new THREE.Vector3(30000, -laneWidth, 0 )
     );
 
     var line = new THREE.Line( geometry2, material2 );
@@ -77,8 +85,8 @@
     var geometry3 = new THREE.Geometry();
 
     geometry3.vertices.push(
-      new THREE.Vector3( -width/2, laneWidth, 0 ),
-      new THREE.Vector3(width/2, laneWidth, 0 )
+      new THREE.Vector3( -30000, laneWidth, 0 ),
+      new THREE.Vector3(30000, laneWidth, 0 )
     );
 
     var line = new THREE.Line( geometry3, material2 );
@@ -88,8 +96,8 @@
     var geometry4 = new THREE.Geometry();
 
     geometry4.vertices.push(
-      new THREE.Vector3( -laneWidth, -height, 0 ),
-      new THREE.Vector3(-laneWidth, height, 0 )
+      new THREE.Vector3( -laneWidth, -30000, 0 ),
+      new THREE.Vector3(-laneWidth, 30000, 0 )
     );
 
     var line = new THREE.Line( geometry4, material2 );
@@ -99,8 +107,8 @@
     var geometry5 = new THREE.Geometry();
 
     geometry5.vertices.push(
-      new THREE.Vector3( laneWidth, -height, 0 ),
-      new THREE.Vector3(laneWidth, height, 0 )
+      new THREE.Vector3( laneWidth, -30000, 0 ),
+      new THREE.Vector3(laneWidth, 30000, 0 )
     );
 
     var line = new THREE.Line( geometry5, material2 );
@@ -127,11 +135,22 @@
     scene.add(cube);
   }
 
+  function getRandomColor() {
+    var letters = '0123456789ABCDEF';
+    var color = '0x';
+    for (var i = 0; i < 6; i++ ) {
+        color += letters[Math.floor(Math.random() * 16)];
+    }
+    return color;
+}
+
   function initCars(){
     var geometry = new THREE.CubeGeometry( 45, 25, 20 );
 
     // var texture = THREE.ImageUtils.loadTexture( 'images/texture.jpg' );
-    var material = new THREE.MeshNormalMaterial({ });
+    var randomColor = getRandomColor();
+    var material = new THREE.MeshBasicMaterial();
+    material.color.setHex(randomColor);
 
     for (var i = 0; i < nCar; i++) {
       var car = new THREE.Mesh( geometry, material );
@@ -235,7 +254,7 @@
           carWaitingStages[i] = false;
         }
 
-        if(cars[i].position.x > width/2){
+        if(cars[i].position.x > width){
 
           cars[i].position.x = -width/2 - (carRange * Math.random());
         }
